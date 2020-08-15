@@ -1,5 +1,5 @@
 ---
-title: 'Manipulating and Plotting Data in R: A Quick Start Guide'
+title: 'Introduction to Manipulating and Plotting Data in R'
 author: "Joshua Keller"
 date: "8/15/2020"
 output:
@@ -18,7 +18,8 @@ knitr::opts_chunk$set(fig.height = 3.5)
 
 # About
 
-This document provides a reference for getting started witht data manipulation and visualization tasks in R. It is not even close to being exhaustive and represents only a very small fraction of what is possible in R. 
+This document provides a reference for getting started with data manipulation and visualization tasks in R. 
+It is no where close to being exhaustive and represents only a very small fraction of what is possible in R. Basic familiarity with the R console and RStudio IDE is assumed.
 
 A recommend resource with more information is R for Data Science (<https://r4ds.had.co.nz>) by Wickham and Grolemund.
 
@@ -32,7 +33,9 @@ library(tidyverse)
 library(palmerpenguins)
 ```
 
-The package we will use the most is the `tidyverse` package, which is a collection of many different functions for reading, manipulating, and visualizing data. More information on the tidyverse is available at <https://www.tidyverse.org>.
+The package used the most in what follows is the `tidyverse` package, which is a collection of many different functions for reading, manipulating, and visualizing data. More information on the tidyverse is available at <https://www.tidyverse.org>.
+
+The `palmerpenguins` package contains the `penguins` dataset, which we will use in these examples.
 
 # Reading Data
 
