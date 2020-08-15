@@ -1,0 +1,371 @@
+---
+title: 'Manipulating and Plotting Data in R: A Quick Start Guide'
+author: "Joshua Keller"
+date: "8/15/2020"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width = 5)
+knitr::opts_chunk$set(fig.height = 3.5)
+```
+
+
+# About
+
+This document provides a reference for getting started witht data manipulation and visualization tasks in R. It is not even close to being exhaustive and represents only a very small fraction of what is possible in R. 
+
+A recommend resource with more information is R for Data Science (<https://r4ds.had.co.nz>) by Wickham and Grolemund.
+
+
+# Loading Packages
+
+R packages provide sets of functions designed for completing specific tasks. To load a package, use the `library()` command:
+
+```{r message=FALSE}
+library(tidyverse)
+library(palmerpenguins)
+```
+
+The package we will use the most is the `tidyverse` package, which is a collection of many different functions for reading, manipulating, and visualizing data. More information on the tidyverse is available at <https://www.tidyverse.org>.
+
+# Reading Data
+
+There are three primary ways to load data into R, depending on its form.
+
+## Comma-separated value (.csv) files
+
+For a `.csv` file, use the `read_csv()` command. 
+
+* The first argument is the (relative) path to the file.
+* Assign the output to your desired variable name
+
+```{r}
+income <- read_csv("../data/median_income.csv")
+```
+
+## Data provided in packages
+
+Some R packages, such as the `palmerpenguins` package, come with data included. In that case, you just refer to the data frame by name:
+
+```{r}
+penguins
+```
+
+## Data stored in an `RData` file
+
+R objects can be saved as `.RData` files. To load them into your workspace, use the `load()` command:
+
+```{r include=F, eval=F}
+testdata <- 1:10
+save(testdata, file="../data/testdata.RData")
+```
+
+
+```{r}
+load("../data/testdata.RData", verbose=TRUE)
+```
+
+
+# Viewing Data Objects
+
+The simplest way to view part of a dataset is to just type its name in the console:
+
+```{r}
+income
+```
+
+For data frames and tibbles, this will print the first several lines. For other objects, it will print a summary of the object information.
+
+
+You can also view objects by clicking on their name in the "Environment" pane of the RStudio IDE.
+
+\newpage 
+# Plotting Data
+
+The primary function for plotting data is `ggplot()`, which comes in the `ggplot2` package and is also part of `tidyverse`.
+
+`ggplot()` works by "adding" together layers.
+
+* The first layer is always `ggplot()`.
+* The next layer can be a `geom_*` function, which controls the type of plot made.
+    * `geom_point()` is used to make a scatterplot
+    * `geom_histogram()` is used to make a histogram
+    * `geom_abline()` is used to make a line, using a provided slope and intercept
+    * many other functions exist
+
+Within each `geom_*` function, we need to provide:
+
+* The `aes()` command that specifies the variables used as the `x` and/or `y` values
+    * The variable names do not need quotes.
+* A `data=` argument that specifies the data frame or tibble containing the necessary variables.
+
+## Scatterplot
+
+Example code for a scatter plot is:
+```{r warning=FALSE}
+ggplot() + 
+    geom_point(aes(x=flipper_length_mm,
+                   y=body_mass_g),
+               data=penguins)
+```
+
+We can make the background white instead of gray by adding a  `theme_bw()` layer:
+
+```{r warning=FALSE}
+ggplot() + 
+    theme_bw() + 
+    geom_point(aes(x=flipper_length_mm,
+                   y=body_mass_g),
+               data=penguins)
+```
+
+
+### Adding color
+
+If we want to use a categorical variable to change the color of the plot, we can set `col=` *inside* the `aes()` command:
+
+```{r warning=FALSE}
+g_penguin <- ggplot() + 
+    theme_bw() + 
+    geom_point(aes(x=flipper_length_mm,
+                   y=body_mass_g,
+                   col=species),
+               data=penguins)
+g_penguin
+```
+
+Note also here that we have assigned the plot to an object (`g_penguin`). We can then print the plot or add to it by calling that object name.
+
+
+Instead, if we want to only change the color of *all* points, set `col=` **outside** of `aes()`:
+
+```{r warning=FALSE}
+ggplot() + 
+    theme_bw() + 
+    geom_point(aes(x=flipper_length_mm,
+                   y=body_mass_g),
+                   col="blue",
+               data=penguins)
+```
+
+
+
+### Adding axis labels and title
+
+* To add an axis label, use `+ xlab("Label here")` or `ylab("Y label here")`.
+* To add a title, use `ggtitle("Title here")`
+
+```{r warning=FALSE}
+g_penguin + 
+    xlab("Flipper Length (mm)") +
+    ylab("Body Mass (g)") +
+    ggtitle("Palmer Penguin Data")
+```
+
+
+### Adding a line
+
+* To add a line with known slope and intercept, use the `geom_abline()` command.
+    * It requires `slope=` and `intercept=` inside the `aes()` command.
+
+```{r warning=FALSE}
+g_penguin + 
+    xlab("Flipper Length (mm)") +
+    ylab("Body Mass (g)") +
+    theme_bw() + 
+    ggtitle("Palmer Penguin Data") +
+    geom_abline(aes(slope=10,
+                    intercept=2000))
+```
+
+## Histogram
+
+* Histograms can be made using the `geom_histogram()` command.
+    * This takes only `x=` (but not `y=`) inside its `aes()`.
+    * The number of bins can be specified using `bins=`.
+
+```{r warning=FALSE}
+ggplot() + 
+    geom_histogram(aes(x=flipper_length_mm),
+                   bins=20,
+                   data=penguins) +
+    xlab("Flipper Length (mm)") + 
+    ggtitle("Penguin Flipper Length")
+```
+
+### Adding Color
+
+Adding color to histograms should be done with care, since it can be difficult to read.
+
+To change the color of the histogram as whole, set `fill=` outside of `aes()`. (For a histogram, `col=` referes to the outline of the boxes, while `fill=` refers to the color within the bars.)
+
+```{r warning=FALSE}
+ggplot() + 
+    theme_bw() + 
+    geom_histogram(aes(x=flipper_length_mm),
+                   bins=20,
+                   fill="red",
+                   data=penguins) +
+    xlab("Flipper Length (mm)") + 
+    ggtitle("Penguin Flipper Length")
+```
+
+
+To create overlapping histograms each of a different color, do all of the following:
+
+* set `fill=` inside of `aes()` 
+* set `position="identity"` in the `geom_histogram()` command.
+* set `alpha=0.5` (or other number between 0.2 and 0.5) in the `geom_histogram()` command. This makes the colors partially transparent, which allows you to see the overlap.
+
+```{r warning=FALSE}
+ggplot() + 
+    theme_bw() + 
+    geom_histogram(aes(x=flipper_length_mm,
+                       fill=species),
+                   bins=20,
+                   alpha=0.5,
+                   position="identity",
+                   data=penguins) +
+    xlab("Flipper Length (mm)") + 
+    ggtitle("Penguin Flipper Length")
+```
+
+
+## Boxplot
+
+* Boxplots can be made using the `geom_boxplot()` command.
+    * To make a horizontal boxplot, use `x=` inside `aes()`.
+    * To make a vertical boxplot use `y=` inside `aes()`.
+
+```{r warning=FALSE, fig.width=3, fig.height=5}
+ggplot() + 
+    theme_bw() + 
+    geom_boxplot(aes(y=flipper_length_mm),
+                   data=penguins) +
+    ylab("Flipper Length (mm)") + 
+    ggtitle("Penguin Flipper Length")
+```
+
+
+
+
+# Manipulating Data
+
+Many different approaches to calculating data summaries in R. We will primarily use functions from `tidyr` and `dplyr` packages, both of which are in the `tidyverse`.
+
+* Functions operate on data frames and tibbles
+* Link functions together using the "pipe": %>%
+* Key functions are: `group_by`, `mutate`, and `summarize`
+
+
+## Summarizing Data in R
+
+\texttt{summarize()} applies a function to all observations
+
+```{r echo=TRUE}
+summarize(penguins, mean(flipper_length_mm, na.rm=T))
+```
+
+When using `%>%`, the first argument is automatically passed forward
+```{r}
+penguins %>%
+  summarize(mean_flipper_length=mean(flipper_length_mm, na.rm=T))
+```
+\texttt{n()} counts the number of observations
+
+```{r}
+penguins %>%
+  summarize(n=n())
+```
+
+
+\texttt{summarize()} can take multiple functions at once
+
+```{r echo=TRUE}
+penguins %>%
+  summarize(n=n(),
+            mean_flipper_length=mean(flipper_length_mm, na.rm=T),
+            `Mean Body Mass (g)` = mean(body_mass_g, na.rm=T))
+```
+
+Set `group_by` to have `summarize()` calculate values within each group.
+
+```{r echo=TRUE}
+penguins %>%
+    group_by(species) %>%
+  summarize(n=n(),
+            mean_flipper_length=mean(flipper_length_mm, na.rm=T),
+            `Mean Body Mass (g)` = mean(body_mass_g, na.rm=T))
+```
+
+* `group_by` can take multiple variables
+
+```{r echo=TRUE}
+penguins %>%
+    group_by(species, sex) %>%
+  summarize(mean_flipper_length=mean(flipper_length_mm, na.rm=T),
+            `Mean Body Mass (g)` = mean(body_mass_g, na.rm=T))
+```
+
+## Creating/Changing variables
+ 
+\texttt{mutate()} creates/replaces variables
+
+
+```{r echo=TRUE, size="footnotesize"}
+names(penguins)
+penguins <- penguins %>%
+  mutate(flipper_length_in=flipper_length_mm/25.4)
+names(penguins)
+penguins %>%
+    select(flipper_length_in, flipper_length_mm)
+```
+
+
+
+## Summarizing Data in R
+
+\texttt{group\_by()} is often combined with \texttt{n()} 
+
+```{r}
+mtcars %>%
+  group_by(cyl) %>%
+  summarize(n=n()) %>%
+  mutate(freq = n / sum(n))
+```
+
+## Summarizing Data in R
+
+```{r}
+mtcars %>%
+  group_by(cyl) %>%
+  summarize(n=n()) %>%
+  mutate(freq = round(n / sum(n), 2))
+```
+
+
+
+## Tables
+
+\texttt{table()} is robust and useful for (cross-)tabulating  categorical variables. It is not part of `tidyverse`, so doesn't work well as with `summarize` or `group_by`.
+
+```{r}
+t1 <- table(penguins$species, penguins$sex)
+t1
+addmargins(t1)
+```
+
+Similar behavior can be achieved in tidyverse, with a little more work:
+```{r warning=FALSE}
+penguins %>%
+  group_by(species, sex) %>%
+  summarize(n=n()) %>%
+  spread(species, n)
+```
+
